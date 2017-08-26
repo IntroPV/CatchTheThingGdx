@@ -16,7 +16,7 @@ import ar.com.pablitar.libgdx.commons.traits.AcceleratedSpeedBehaviour
 import com.badlogic.gdx.math.Intersector
 
 class Catcher(world: World) extends RectangularPositioned with SpeedBehaviour {
-  position = new Vector2(Configuration.VIEWPORT_WIDTH / 2, 100)
+  position = new Vector2(world.width / 2, 100)
   val catcherSpeedMagnitude = 800
   
   var score = 0
@@ -70,23 +70,29 @@ class SeedSpawner(world: World) {
   }
 
   def generateSpawnTime: Float = {
-    MathUtils.random(1, 3)
+    MathUtils.random(0.7f, 1.5f)
   }
 
   def spawnSeed = {
-    world.addSeed(new Seed(generateSeedPosition, world))
+    val left = MathUtils.randomBoolean()
+    val position = new Vector2(if(left) 0 else world.width, world.height)
+    val speedDirection = if(left) 1 else -1
+    world.addSeed(new Seed(position, new Vector2(speedDirection * randomSpeedMagnitude, 0), world))
   }
+  
+  def randomSpeedMagnitude = MathUtils.random(50f, 900f)
 
   val POSITION_MARGIN = 100
 
-  def generateSeedPosition: Vector2 = (MathUtils.random(POSITION_MARGIN, Configuration.VIEWPORT_WIDTH - POSITION_MARGIN), Configuration.VIEWPORT_HEIGHT)
 }
 
-class Seed(p: Vector2, world: World) extends CircularPositioned with AcceleratedSpeedBehaviour {
+class Seed(p: Vector2, aSpeed: Vector2, world: World) extends CircularPositioned with AcceleratedSpeedBehaviour {
   val radius = 40f
   this.position = p
+  this.speed = aSpeed
 
   val acceleration = new Vector2(0, -800)
+  
 
   def update(delta: Float) = {
     updateValues(delta)
@@ -115,4 +121,7 @@ class World {
   def removeSeed(aSeed: Seed) = {
     seeds.removeDelayed(aSeed)
   }
+  
+  def width = Configuration.VIEWPORT_WIDTH
+  def height = Configuration.VIEWPORT_HEIGHT
 }
