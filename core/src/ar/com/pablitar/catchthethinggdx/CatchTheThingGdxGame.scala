@@ -19,4 +19,8 @@ class CatchTheThingGdxGame extends ApplicationAdapter {
       worldRenderer.renderOn(renderers)
     }    
   }
+  
+  override def dispose() {
+    Resources.dispose()
+  }
 }

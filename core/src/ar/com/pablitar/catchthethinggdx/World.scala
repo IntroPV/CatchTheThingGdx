@@ -17,16 +17,32 @@ import com.badlogic.gdx.math.Intersector
 
 class Catcher(world: World) extends RectangularPositioned with SpeedBehaviour {
   position = new Vector2(world.width / 2, 100)
-  val catcherSpeedMagnitude = 800
+  
+  val baseCatcherSpeedMagnitude = 800
   
   var score = 0
 
   val width = 200f
   val height = 80f
+  
+  val maxTurbo = 1.0f
+  val turboRechargeRate = 0.5f
+  var turbo = maxTurbo
+  val turboRechargeCooldown = 0.5f
+  var turboRechargeCooldownCounter = 0f
 
   def update(delta: Float) = {
+    processTurbo(delta)
     processMovement(delta)
     checkCollisionAgainstSeeds(delta)
+  }
+  
+  def catcherSpeedMagnitude = {
+    if(turbo > 0 &&  Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
+      baseCatcherSpeedMagnitude * 2
+    } else {
+      baseCatcherSpeedMagnitude
+    }
   }
 
   def processMovement(delta: Float) = {
@@ -55,7 +71,17 @@ class Catcher(world: World) extends RectangularPositioned with SpeedBehaviour {
 
   def sumScore(aSeed: Seed) = {
     score+=1
-    println("Score: " + score)
+  }
+
+  def processTurbo(delta: Float) = {
+    if(Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
+      turbo = Math.max(turbo - delta, 0)
+      turboRechargeCooldownCounter = turboRechargeCooldown
+    } else if(turboRechargeCooldownCounter <=0){
+      turbo = Math.min(turbo + turboRechargeRate * delta, maxTurbo)
+    } else {
+      turboRechargeCooldownCounter -= delta
+    }
   }
 }
 
