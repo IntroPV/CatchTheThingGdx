@@ -96,7 +96,7 @@ class SeedSpawner(world: World) {
   }
 
   def generateSpawnTime: Float = {
-    MathUtils.random(0.7f, 1.5f)
+    MathUtils.random(0.3f, 1.3f)
   }
 
   def spawnSeed = {
