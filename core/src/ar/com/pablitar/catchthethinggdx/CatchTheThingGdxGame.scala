@@ -7,8 +7,8 @@ import com.badlogic.gdx.graphics.GL20
 
 class CatchTheThingGdxGame extends ApplicationAdapter {
   lazy val renderers = new Renderers
-  lazy val world = new World
-  lazy val worldRenderer = new WorldRenderer(world)
+  var world = new World(this)
+  lazy val worldRenderer = new WorldRenderer(() => world)
 
   override def render() = {
     val delta = Gdx.graphics.getDeltaTime()
@@ -22,5 +22,9 @@ class CatchTheThingGdxGame extends ApplicationAdapter {
   
   override def dispose() {
     Resources.dispose()
+  }
+
+  def restart() = {
+    world = new World(this)
   }
 }

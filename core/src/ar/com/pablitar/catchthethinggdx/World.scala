@@ -17,14 +17,14 @@ import com.badlogic.gdx.math.Intersector
 
 class Catcher(world: World) extends RectangularPositioned with SpeedBehaviour {
   position = new Vector2(world.width / 2, 100)
-  
+
   val baseCatcherSpeedMagnitude = 800
-  
+
   var score = 0
 
   val width = 200f
   val height = 80f
-  
+
   val maxTurbo = 1.0f
   val turboRechargeRate = 0.5f
   var turbo = maxTurbo
@@ -36,9 +36,9 @@ class Catcher(world: World) extends RectangularPositioned with SpeedBehaviour {
     processMovement(delta)
     checkCollisionAgainstSeeds(delta)
   }
-  
+
   def catcherSpeedMagnitude = {
-    if(turbo > 0 &&  Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
+    if (turbo > 0 && Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
       baseCatcherSpeedMagnitude * 2
     } else {
       baseCatcherSpeedMagnitude
@@ -70,14 +70,14 @@ class Catcher(world: World) extends RectangularPositioned with SpeedBehaviour {
   }
 
   def sumScore(aSeed: Seed) = {
-    score+=1
+    score += 1
   }
 
   def processTurbo(delta: Float) = {
-    if(Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
+    if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
       turbo = Math.max(turbo - delta, 0)
       turboRechargeCooldownCounter = turboRechargeCooldown
-    } else if(turboRechargeCooldownCounter <=0){
+    } else if (turboRechargeCooldownCounter <= 0) {
       turbo = Math.min(turbo + turboRechargeRate * delta, maxTurbo)
     } else {
       turboRechargeCooldownCounter -= delta
@@ -101,11 +101,11 @@ class SeedSpawner(world: World) {
 
   def spawnSeed = {
     val left = MathUtils.randomBoolean()
-    val position = new Vector2(if(left) 0 else world.width, world.height)
-    val speedDirection = if(left) 1 else -1
+    val position = new Vector2(if (left) 0 else world.width, world.height)
+    val speedDirection = if (left) 1 else -1
     world.addSeed(new Seed(position, new Vector2(speedDirection * randomSpeedMagnitude, 0), world))
   }
-  
+
   def randomSpeedMagnitude = MathUtils.random(50f, 900f)
 
   val POSITION_MARGIN = 100
@@ -118,7 +118,6 @@ class Seed(p: Vector2, aSpeed: Vector2, world: World) extends CircularPositioned
   this.speed = aSpeed
 
   val acceleration = new Vector2(0, -800)
-  
 
   def update(delta: Float) = {
     updateValues(delta)
@@ -128,16 +127,47 @@ class Seed(p: Vector2, aSpeed: Vector2, world: World) extends CircularPositioned
   }
 }
 
-class World {
+trait WorldState {
+  def update(world: World, delta: Float)
+}
+object Ended extends WorldState {
+  def update(world: World, delta: Float): Unit = {
+    if (Gdx.input.isKeyPressed(Keys.ENTER)) {
+      world.restart()
+    }
+  }
+}
+object Started extends WorldState {
+  def update(world: World, delta: Float): Unit = {
+    world.catcher.update(delta)
+    world.seedSpawner.update(delta)
+
+    world.seeds.foreachWithRemoveSupport(_.update(delta))
+    world.remaining -= delta
+    if(world.remaining <= 0) {
+      world.remaining = 0
+      world.finishRound()
+    }
+  }
+}
+object Initial extends WorldState {
+  def update(world: World, delta: Float): Unit = {
+    if (Gdx.input.isKeyPressed(Keys.ENTER)) {
+      world.start()
+    }
+  }
+}
+
+class World(game: CatchTheThingGdxGame) {
   val catcher = new Catcher(this)
   val seedSpawner = new SeedSpawner(this)
   val seeds = new DelayedRemovalBuffer[Seed]
+  var state: WorldState = Initial
+  val roundDuration = 30f
+  var remaining = roundDuration
 
   def update(delta: Float) = {
-    catcher.update(delta)
-    seedSpawner.update(delta)
-
-    seeds.foreachWithRemoveSupport(_.update(delta))
+    state.update(this, delta)
   }
 
   def addSeed(aSeed: Seed) = {
@@ -147,7 +177,19 @@ class World {
   def removeSeed(aSeed: Seed) = {
     seeds.removeDelayed(aSeed)
   }
-  
+
   def width = Configuration.VIEWPORT_WIDTH
   def height = Configuration.VIEWPORT_HEIGHT
+
+  def start() = {
+    state = Started
+  }
+
+  def finishRound() = {
+    state = Ended
+  }
+
+  def restart() = {
+    game.restart()
+  }
 }
