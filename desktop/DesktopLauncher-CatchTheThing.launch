@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/catch-the-thing-gdx-desktop/src/ar/com/pablitar/catchthethinggdx/desktop/DesktopLauncher.java"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ar.com.pablitar.catchthethinggdx.desktop.DesktopLauncher"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="catch-the-thing-gdx-desktop"/>
+<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:catch-the-thing-gdx-core/assets}"/>
+</launchConfiguration>
