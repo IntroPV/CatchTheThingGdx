@@ -40,8 +40,11 @@ class WorldRenderer(world: () => World) {
   }
 
   def renderScore(renderers: Renderers, score: Int) = {
-    renderers.withSprites { spriteRenderer =>
-      Resources.defaultFont.draw(spriteRenderer, "Score: " + score, hudPadding, Configuration.VIEWPORT_HEIGHT - hudPadding)
+
+    renderers.withSprites { batch =>
+      val glyph = Resources.smallFont.draw(batch, "Score", hudPadding, Configuration.VIEWPORT_HEIGHT - hudPadding)
+      Resources.defaultFont.draw(batch, score.toString(), 
+          hudPadding + glyph.width / 2, Configuration.VIEWPORT_HEIGHT - hudPadding - glyph.height - 10, 0, Align.center, false)
     }
   }
 
