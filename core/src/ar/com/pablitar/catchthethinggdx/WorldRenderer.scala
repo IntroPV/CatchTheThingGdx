@@ -7,6 +7,9 @@ import ar.com.pablitar.libgdx.commons.DelayedRemovalBuffer
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
+import ar.com.pablitar.libgdx.commons.extensions.SpriteBatchExtensions._
+import ar.com.pablitar.libgdx.commons.extensions.VectorExtensions._
+import com.badlogic.gdx.math.Vector2
 
 class WorldRenderer(world: () => World) {
 
@@ -40,11 +43,10 @@ class WorldRenderer(world: () => World) {
   }
 
   def renderScore(renderers: Renderers, score: Int) = {
-
     renderers.withSprites { batch =>
-      val glyph = Resources.smallFont.draw(batch, "Score", hudPadding, Configuration.VIEWPORT_HEIGHT - hudPadding)
-      Resources.defaultFont.draw(batch, score.toString(), 
-          hudPadding + glyph.width / 2, Configuration.VIEWPORT_HEIGHT - hudPadding - glyph.height - 10, 0, Align.center, false)
+      val scorePosition:Vector2 = (hudPadding, Configuration.VIEWPORT_HEIGHT - hudPadding)
+      val glyph = batch.drawText("Score", Resources.smallFont, scorePosition, color = Color.GOLDENROD)
+      batch.drawText(score.toString(), Resources.defaultFont, scorePosition + (glyph.width / 2, -glyph.height - 10), Align.center)
     }
   }
 
@@ -57,7 +59,7 @@ class WorldRenderer(world: () => World) {
     var glyph: GlyphLayout = null
 
     renderers.withSprites { spriteRenderer =>
-      glyph = Resources.smallFont.draw(spriteRenderer, "TURBO", turboLeft, labelYPosition)
+      glyph = spriteRenderer.drawText("Turbo", Resources.smallFont, (turboLeft, labelYPosition), color = Color.GOLDENROD)
     }
 
     renderers.withShapes() { shapeRenderer =>
@@ -71,9 +73,9 @@ class WorldRenderer(world: () => World) {
 
   def renderRemainingTime(renderers: Renderers, world: World) = {
     renderers.withSprites { batch =>
-      val glyph = Resources.smallFont.draw(batch, "Time Left", Configuration.VIEWPORT_WIDTH / 2, Configuration.VIEWPORT_HEIGHT - hudPadding, 0, Align.center, false)
-      Resources.defaultFont.draw(batch, f"${world.remaining}%.1fs",
-        Configuration.VIEWPORT_WIDTH / 2, Configuration.VIEWPORT_HEIGHT - hudPadding - glyph.height - 10, 0, Align.center, false)
+      val labelPosition:Vector2 = (Configuration.VIEWPORT_WIDTH / 2f, Configuration.VIEWPORT_HEIGHT - hudPadding)
+      val glyph = batch.drawText("Time Left", Resources.smallFont, labelPosition, Align.center, color = Color.GOLDENROD)
+      batch.drawText(f"${world.remaining}%.1fs", Resources.defaultFont, labelPosition - (0f, glyph.height + 10), Align.center)
     }
   }
 
@@ -82,16 +84,13 @@ class WorldRenderer(world: () => World) {
 
       val message = world.state match {
         case Initial => Some("Press enter to start game")
-        case Ended   => Some(s"Game Over. Your score was: ${world.catcher.score}.\nPress enter to restart")
+        case Ended   => Some(s"Game Over. Your score was: [GOLD]${world.catcher.score}[].\nPress enter to restart")
         case _       => None
       }
 
-      Resources.defaultFont.setColor(Color.GOLD)
+      message.foreach(batch.drawText(_, Resources.defaultFont,
+        (Configuration.VIEWPORT_WIDTH / 2, Configuration.VIEWPORT_HEIGHT / 2), Align.center))
 
-      message.foreach(Resources.defaultFont.draw(batch, _,
-        Configuration.VIEWPORT_WIDTH / 2, Configuration.VIEWPORT_HEIGHT / 2, 0, Align.center, true))
-
-      Resources.defaultFont.setColor(Color.WHITE)
     }
   }
 }
